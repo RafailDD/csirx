@@ -1,0 +1,63 @@
+name: Unit tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      waves:
+        description: "Also dump VCD waveforms for every testbench"
+        type: boolean
+        default: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Icarus Verilog
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog
+          iverilog -V 2>&1 | head -1
+
+      - name: Run testbenches
+        run: make test
+
+      - name: Dump waveforms
+        if: ${{ always() && inputs.waves }}
+        run: for t in $(make -s list | cut -d' ' -f1); do make VCD=1 "$t" || true; done
+
+      - name: Write job summary
+        if: always()
+        run: |
+          {
+            echo "## Testbench results"
+            echo '```'
+            cat build/test_summary.txt 2>/dev/null || echo "No summary produced (see the step log)."
+            echo '```'
+            for log in build/logs/*.log; do
+              if grep -qE '^FAIL|FATAL|error' "$log"; then
+                echo "<details><summary>$(basename "$log")</summary>"
+                echo
+                echo '```'
+                grep -E '^FAIL|FATAL|error' "$log" | head -50
+                echo '```'
+                echo "</details>"
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload logs and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            build/logs/
+            build/test_summary.txt
+            build/test-results.xml
+            build/*.vcd
+          if-no-files-found: ignore
