@@ -21,7 +21,7 @@ See [unit_tests/README.md](unit_tests/README.md) for:
 - how to add a new testbench;
 - CI.
 
-GitHub Actions runs the suite on every push and pull request.
+GitHub Actions runs the suite on every pull request and every push to `master`.
 
 # License
 This code is released under the GNU LGPL 3.0.  That means you're welcome to use it however you want, but if you publish/sell a design based on a modified version of the code, then you need to share your changes to this code (but not the rest of your system).

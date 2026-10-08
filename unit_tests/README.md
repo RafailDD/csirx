@@ -218,7 +218,7 @@ Tips:
 
 ## Continuous integration
 
-`.github/workflows/tests.yml` runs `make test` on every push and pull request
+`.github/workflows/tests.yml` runs `make test` on every pull request and every push to `master`
 on GitHub Actions. For each run:
 
 - the job summary page shows the results table and the `FAIL` lines of any
